@@ -1,8 +1,8 @@
 # Changelog
 
-## 1.0.0
+## 4.0.6
 
-- Initial release
+- Initial release, tracking CWA upstream v4.0.6
 - Wraps `crocodilestick/calibre-web-automated:latest`
 - Supports amd64, aarch64, armv7
 - HA Ingress support on port 8083
