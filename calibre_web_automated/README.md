@@ -1,6 +1,6 @@
 # Home Assistant Add-on: Calibre-Web Automated
 
-![logo](logo.png)
+![logo](https://raw.githubusercontent.com/koraysels/hassio-addons/main/calibre_web_automated/logo.png)
 
 ![Version](https://img.shields.io/badge/dynamic/yaml?label=Version&query=%24.version&url=https%3A%2F%2Fraw.githubusercontent.com%2Fkoraysels%2Fhassio-addons%2Fmain%2Fcalibre_web_automated%2Fconfig.yaml)
 ![Ingress](https://img.shields.io/badge/dynamic/yaml?label=Ingress&query=%24.ingress&url=https%3A%2F%2Fraw.githubusercontent.com%2Fkoraysels%2Fhassio-addons%2Fmain%2Fcalibre_web_automated%2Fconfig.yaml)
@@ -20,7 +20,7 @@ library through the built-in web UI, accessible directly from the HA sidebar via
 
 1. Add this repository to your Home Assistant instance:
 
-   [![Add repository](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fkoraysels%2Fhassio-addons)
+   [![Add repository to HA](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fkoraysels%2Fhassio-addons)
 
    Or go to **Settings → Add-ons → Add-on Store → ⋮ → Repositories** and add:
    ```
