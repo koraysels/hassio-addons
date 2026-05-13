@@ -1,0 +1,30 @@
+configuration:
+  books_dir:
+    name: Books Directory
+    description: >-
+      Path to your Calibre library folder. Must contain metadata.db (created
+      automatically on first run). Default: /share/calibre/books
+  ingest_dir:
+    name: Ingest Directory
+    description: >-
+      Drop new ebooks here for automatic import. Files are moved into the
+      library and removed from this folder after processing.
+      Default: /share/calibre/ingest
+  config_dir:
+    name: Config Directory
+    description: >-
+      Path to store Calibre-Web Automated configuration, SQLite database,
+      and logs. Default: /share/calibre/config
+  PUID:
+    name: User ID (PUID)
+    description: >-
+      Unix user ID the application runs as. Run 'id' in a terminal to find yours.
+  PGID:
+    name: Group ID (PGID)
+    description: >-
+      Unix group ID the application runs as. Run 'id' in a terminal to find yours.
+  TZ:
+    name: Timezone
+    description: >-
+      IANA timezone string, e.g. America/New_York or Europe/London.
+      Full list: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones

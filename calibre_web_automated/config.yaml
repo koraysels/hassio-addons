@@ -1,0 +1,35 @@
+name: Calibre-Web Automated
+version: "1.0.0"
+slug: calibre_web_automated
+description: >-
+  Automated Calibre-Web with ebook ingestion, metadata fetching, and a clean web interface.
+url: https://github.com/koraysels/hassio-addons/tree/main/calibre_web_automated
+arch:
+  - aarch64
+  - amd64
+  - armv7
+init: false
+map:
+  - share:rw
+ports:
+  8083/tcp: 8083
+ports_description:
+  8083/tcp: Calibre-Web Automated WebUI (not required when using Ingress)
+ingress: true
+ingress_port: 8083
+panel_icon: mdi:book-open-variant
+panel_title: Calibre-Web
+options:
+  books_dir: /share/calibre/books
+  ingest_dir: /share/calibre/ingest
+  config_dir: /share/calibre/config
+  PUID: 1000
+  PGID: 1000
+  TZ: UTC
+schema:
+  books_dir: str
+  ingest_dir: str
+  config_dir: str
+  PUID: int
+  PGID: int
+  TZ: str

@@ -1,0 +1,9 @@
+build_from:
+  aarch64: crocodilestick/calibre-web-automated:latest
+  amd64: crocodilestick/calibre-web-automated:latest
+  armv7: crocodilestick/calibre-web-automated:latest
+labels:
+  org.opencontainers.image.title: "Calibre-Web Automated"
+  org.opencontainers.image.description: "Automated Calibre-Web with ebook management and ingestion"
+  org.opencontainers.image.source: "https://github.com/koraysels/hassio-addons"
+  org.opencontainers.image.licenses: "MIT"
