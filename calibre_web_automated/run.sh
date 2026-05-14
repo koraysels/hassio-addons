@@ -81,6 +81,23 @@ NGINX_EOF
 nginx -c /tmp/cwa-ingress.nginx.conf &
 echo "[CWA-HA] nginx ingress proxy started on port 8099"
 
+# --- Upload size patch ---
+# CWA's config_upload_size defaults to 16 MB and isn't exposed in the UI.
+# auto_library.py only resets config_calibre_dir, so this patch survives restarts.
+patch_upload_limit() {
+    local db="/config/app.db"
+    local retries=0
+    while [ ! -f "${db}" ] && [ ${retries} -lt 30 ]; do
+        sleep 1; retries=$((retries + 1))
+    done
+    if [ -f "${db}" ]; then
+        sqlite3 "${db}" "UPDATE settings SET config_upload_size=2048;" 2>/dev/null \
+            && echo "[CWA-HA] Upload size limit set to 2048 MB" \
+            || echo "[CWA-HA] WARNING: could not patch upload size"
+    fi
+}
+patch_upload_limit &
+
 # --- Ingest bridge ---
 # CWA watches /cwa-book-ingest. Bridge files from the user's share ingest dir into it.
 ingest_bridge() {

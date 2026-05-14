@@ -1,5 +1,12 @@
 # Changelog
 
+## 4.0.6.3
+
+- Fix: remove 16 MB upload size cap
+  - CWA's config_upload_size defaults to 16 MB and is not exposed in the UI
+  - Background job patches it to 2048 MB in app.db on every start
+  - auto_library.py does not reset this field so the patch survives
+
 ## 4.0.6.2
 
 - Fix: books now reliably land in Samba-accessible books_dir
