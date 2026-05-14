@@ -1,5 +1,15 @@
 # Changelog
 
+## 4.0.6.2
+
+- Fix: books now reliably land in Samba-accessible books_dir
+  - Bind-mount books_dir over /calibre-library before CWA starts so books are
+    physically stored on the share even though CWA writes to /calibre-library
+  - The previous sqlite3 patch approach was always reverted by CWA's own
+    auto_library.py service, which unconditionally overwrites config_calibre_dir
+  - Requires full_access: true (added to config.yaml) for the bind mount syscall
+  - Removed patch-library.sh and sqlite3 dep from Dockerfile (no longer needed)
+
 ## 4.0.6.1
 
 - Fix: books now land in the configured Samba-accessible books_dir instead of an internal Docker volume

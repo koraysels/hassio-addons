@@ -17,6 +17,17 @@ mkdir -p "${BOOKS_DIR}" "${INGEST_DIR}"
 echo "[CWA-HA] Books dir : ${BOOKS_DIR}"
 echo "[CWA-HA] Ingest dir: ${INGEST_DIR}"
 
+# --- Library bind mount ---
+# CWA's auto_library.py always writes books to /calibre-library (a Docker VOLUME)
+# and unconditionally sets config_calibre_dir to /calibre-library in app.db —
+# any patch we make gets reverted. The only way to redirect storage is to overlay
+# /calibre-library with a bind mount before CWA starts. Requires full_access: true.
+if mount --bind "${BOOKS_DIR}" /calibre-library; then
+    echo "[CWA-HA] Bound ${BOOKS_DIR} → /calibre-library (books will appear in Samba)"
+else
+    echo "[CWA-HA] WARNING: bind mount failed — books will be stored at /calibre-library (not Samba-accessible)"
+fi
+
 # --- HA Ingress nginx proxy ---
 # HA connects to ingress_port (8099). nginx proxies to CWA at 8083 and injects
 # X-Script-Name so Calibre-Web (Flask) generates correct URLs inside the HA iframe.
@@ -69,30 +80,6 @@ NGINX_EOF
 
 nginx -c /tmp/cwa-ingress.nginx.conf &
 echo "[CWA-HA] nginx ingress proxy started on port 8099"
-
-# --- Library path auto-patch ---
-# Wait for cwa-init to create /config/app.db, then point CWA at the configured books_dir.
-set_library_path() {
-    local db="/config/app.db"
-    local retries=0
-    while [ ! -f "${db}" ] && [ ${retries} -lt 30 ]; do
-        sleep 1; retries=$((retries + 1))
-    done
-    if [ ! -f "${db}" ]; then
-        echo "[CWA-HA] WARNING: app.db not found after 30s, skipping library patch"
-        return
-    fi
-    local current
-    current=$(sqlite3 "${db}" "SELECT config_calibre_dir FROM settings LIMIT 1;" 2>/dev/null || echo "")
-    if [ "${current}" != "${BOOKS_DIR}" ]; then
-        sqlite3 "${db}" "UPDATE settings SET config_calibre_dir='${BOOKS_DIR}';" 2>/dev/null \
-            && echo "[CWA-HA] Library path set to: ${BOOKS_DIR}" \
-            || echo "[CWA-HA] WARNING: could not patch library path in app.db"
-    else
-        echo "[CWA-HA] Library path already correct: ${BOOKS_DIR}"
-    fi
-}
-set_library_path &
 
 # --- Ingest bridge ---
 # CWA watches /cwa-book-ingest. Bridge files from the user's share ingest dir into it.
