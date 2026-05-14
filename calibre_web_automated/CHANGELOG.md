@@ -1,5 +1,13 @@
 # Changelog
 
+## 4.0.6.6
+
+- Fix: restore linuxserver.io ENV vars stripped by FROM scratch
+  - FROM scratch removes all Docker image metadata including ENV PATH=/lsiopy/bin:...
+  - Without that PATH, python3 was not found and CWA's web server failed to start
+  - Re-declare all critical linuxserver.io ENV vars (PATH, VIRTUAL_ENV, S6 settings)
+  - Symlink approach intact; this makes it actually work
+
 ## 4.0.6.5
 
 - Fix: books stored directly in Samba share with zero duplication
