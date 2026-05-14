@@ -1,5 +1,15 @@
 # Changelog
 
+## 4.0.6.5
+
+- Fix: books stored directly in Samba share with zero duplication
+  - Multi-stage Dockerfile (FROM scratch final stage) strips the Docker VOLUME
+    declarations from the upstream CWA image; /calibre-library becomes a plain dir
+  - run.sh replaces /calibre-library with a symlink to books_dir at startup — CWA
+    writes directly to /share/calibre/books, Samba sees files immediately
+  - No rsync, no bind mount, no elevated privileges needed
+  - Removed full_access: true and rsync from Dockerfile
+
 ## 4.0.6.4
 
 - Fix: books now reliably appear in Samba share within ~30 seconds of being added

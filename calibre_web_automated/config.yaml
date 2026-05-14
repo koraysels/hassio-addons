@@ -1,5 +1,5 @@
 name: Calibre-Web Automated
-version: "4.0.6.4"
+version: "4.0.6.5"
 slug: calibre_web_automated
 description: >-
   Automated Calibre-Web with ebook ingestion, metadata fetching, and a clean web interface.
@@ -18,7 +18,6 @@ ports_description:
   8083/tcp: Calibre-Web Automated WebUI (not required when using Ingress)
 ingress: true
 ingress_port: 8099
-full_access: true
 hassio_api: true
 panel_icon: mdi:book-open-variant
 panel_title: Calibre-Web

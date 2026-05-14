@@ -17,26 +17,14 @@ mkdir -p "${BOOKS_DIR}" "${INGEST_DIR}"
 echo "[CWA-HA] Books dir : ${BOOKS_DIR}"
 echo "[CWA-HA] Ingest dir: ${INGEST_DIR}"
 
-# --- Library → Samba sync ---
-# CWA always stores its library at /calibre-library (a Docker VOLUME declared in
-# the upstream image). We cannot reliably redirect that volume via bind mount in
-# all HA configurations, so we instead rsync /calibre-library → books_dir every
-# 30 seconds. Books appear in the Samba share within half a minute of being added.
-# If the bind mount IS available (full_access: true granted), it is attempted first
-# so the sync becomes a free no-op.
-if mount --bind "${BOOKS_DIR}" /calibre-library 2>/dev/null; then
-    echo "[CWA-HA] Bound ${BOOKS_DIR} → /calibre-library (zero-lag Samba access)"
-else
-    echo "[CWA-HA] Bind mount unavailable; rsync will mirror to ${BOOKS_DIR} every 30s"
-fi
-
-sync_library() {
-    while true; do
-        sleep 30
-        rsync -a --quiet /calibre-library/ "${BOOKS_DIR}/" 2>/dev/null || true
-    done
-}
-sync_library &
+# --- Library redirect ---
+# The upstream CWA image declared /calibre-library as a Docker VOLUME. Our
+# multi-stage Dockerfile (FROM scratch) strips that declaration, making it a
+# plain directory. We replace it with a symlink so every write CWA makes to
+# /calibre-library lands directly in books_dir — no rsync, no duplication.
+rm -rf /calibre-library
+ln -sf "${BOOKS_DIR}" /calibre-library
+echo "[CWA-HA] Symlinked /calibre-library → ${BOOKS_DIR}"
 
 # --- HA Ingress nginx proxy ---
 # HA connects to ingress_port (8099). nginx proxies to CWA at 8083 and injects
