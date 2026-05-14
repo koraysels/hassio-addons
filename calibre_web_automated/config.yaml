@@ -9,10 +9,9 @@ arch:
   - amd64
   - armv7
 init: false
-privileged:
-  - SYS_ADMIN
 map:
   - share:rw
+  - addon_config:rw
 ports:
   8083/tcp: 8083
 ports_description:
@@ -24,14 +23,12 @@ panel_title: Calibre-Web
 options:
   books_dir: /share/calibre/books
   ingest_dir: /share/calibre/ingest
-  config_dir: /share/calibre/config
   PUID: 1000
   PGID: 1000
   TZ: UTC
 schema:
   books_dir: str
   ingest_dir: str
-  config_dir: str
   PUID: int
   PGID: int
   TZ: str

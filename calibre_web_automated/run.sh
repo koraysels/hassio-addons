@@ -3,42 +3,32 @@ set -euo pipefail
 
 CONFIG_PATH=/data/options.json
 
-# Read HA options with sane defaults
 BOOKS_DIR=$(jq --raw-output  '.books_dir  // "/share/calibre/books"'  "${CONFIG_PATH}")
 INGEST_DIR=$(jq --raw-output '.ingest_dir // "/share/calibre/ingest"' "${CONFIG_PATH}")
-CONFIG_DIR=$(jq --raw-output '.config_dir // "/share/calibre/config"' "${CONFIG_PATH}")
 PUID=$(jq --raw-output       '.PUID       // 1000'                    "${CONFIG_PATH}")
 PGID=$(jq --raw-output       '.PGID       // 1000'                    "${CONFIG_PATH}")
 TZ=$(jq --raw-output         '.TZ         // "UTC"'                   "${CONFIG_PATH}")
 
-# Export env vars that CWA reads at startup
 export PUID PGID TZ
 export TRUSTED_PROXY_COUNT=1   # required for HA Ingress reverse-proxy header handling
 
-# bind_mount <src> <dst>
-# CWA declares VOLUME for these paths, so Docker mounts anonymous volumes there before
-# this script runs. We unmount those and bind-mount the user's configured directories
-# instead. Requires SYS_ADMIN capability (set in config.yaml).
-bind_mount() {
-    local src="$1" dst="$2"
-    mkdir -p "${src}" "${dst}"
-    if mountpoint -q "${dst}" 2>/dev/null; then
-        umount "${dst}"
-    fi
-    mount --bind "${src}" "${dst}"
+# Create the user's share directories on first run
+mkdir -p "${BOOKS_DIR}" "${INGEST_DIR}"
+
+echo "[CWA-HA] Books dir : ${BOOKS_DIR}"
+echo "[CWA-HA] Ingest dir: ${INGEST_DIR}"
+echo "[CWA-HA] Config dir: /config (managed by HA addon_config)"
+
+# CWA watches /cwa-book-ingest for new ebooks. That path is a Docker volume and
+# cannot be redirected without elevated privileges. Instead, run a background loop
+# that moves files from the user's configured ingest dir into CWA's watched path.
+ingest_bridge() {
+    while true; do
+        find "${INGEST_DIR}" -maxdepth 1 -type f \
+            -exec mv -n {} /cwa-book-ingest/ \; 2>/dev/null || true
+        sleep 3
+    done
 }
+ingest_bridge &
 
-# Migrate any existing /config content to config_dir on first run before unmounting
-if mountpoint -q /config 2>/dev/null; then
-    if [ -n "$(ls -A /config 2>/dev/null)" ] && [ -z "$(ls -A "${CONFIG_DIR}" 2>/dev/null)" ]; then
-        mkdir -p "${CONFIG_DIR}"
-        cp -rp /config/. "${CONFIG_DIR}/"
-    fi
-fi
-
-bind_mount "${BOOKS_DIR}"  /calibre-library
-bind_mount "${INGEST_DIR}" /cwa-book-ingest
-bind_mount "${CONFIG_DIR}" /config
-
-# Hand control to CWA's S6 supervisor unchanged
 exec /init

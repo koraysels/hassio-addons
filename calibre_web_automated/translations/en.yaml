@@ -2,19 +2,16 @@ configuration:
   books_dir:
     name: Books Directory
     description: >-
-      Path to your Calibre library folder. Must contain metadata.db (created
-      automatically on first run). Default: /share/calibre/books
+      Path under /share where your Calibre library lives. The folder is created
+      automatically on first start. After starting, open the CWA web UI and set
+      the Calibre library location to this same path.
+      Default: /share/calibre/books
   ingest_dir:
     name: Ingest Directory
     description: >-
-      Drop new ebooks here for automatic import. Files are moved into the
-      library and removed from this folder after processing.
+      Drop new ebooks here. A background process moves them into CWA's ingest
+      queue every few seconds so they are imported automatically.
       Default: /share/calibre/ingest
-  config_dir:
-    name: Config Directory
-    description: >-
-      Path to store Calibre-Web Automated configuration, SQLite database,
-      and logs. Default: /share/calibre/config
   PUID:
     name: User ID (PUID)
     description: >-
