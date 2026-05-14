@@ -9,6 +9,8 @@ arch:
   - amd64
   - armv7
 init: false
+privileged:
+  - SYS_ADMIN
 map:
   - share:rw
 ports:

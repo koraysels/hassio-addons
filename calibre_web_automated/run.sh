@@ -15,27 +15,30 @@ TZ=$(jq --raw-output         '.TZ         // "UTC"'                   "${CONFIG_
 export PUID PGID TZ
 export TRUSTED_PROXY_COUNT=1   # required for HA Ingress reverse-proxy header handling
 
-# Ensure configured directories exist (first-run safe)
-mkdir -p "${BOOKS_DIR}" "${INGEST_DIR}" "${CONFIG_DIR}"
+# bind_mount <src> <dst>
+# CWA declares VOLUME for these paths, so Docker mounts anonymous volumes there before
+# this script runs. We unmount those and bind-mount the user's configured directories
+# instead. Requires SYS_ADMIN capability (set in config.yaml).
+bind_mount() {
+    local src="$1" dst="$2"
+    mkdir -p "${src}" "${dst}"
+    if mountpoint -q "${dst}" 2>/dev/null; then
+        umount "${dst}"
+    fi
+    mount --bind "${src}" "${dst}"
+}
 
-# /calibre-library → books_dir
-rm -rf /calibre-library
-ln -sfn "${BOOKS_DIR}" /calibre-library
-
-# /cwa-book-ingest → ingest_dir
-rm -rf /cwa-book-ingest
-ln -sfn "${INGEST_DIR}" /cwa-book-ingest
-
-# /config → config_dir
-# If /config exists as a real directory with content and the target is empty,
-# migrate the image-layer defaults on first run so no config is lost.
-if [ -d /config ] && [ ! -L /config ]; then
+# Migrate any existing /config content to config_dir on first run before unmounting
+if mountpoint -q /config 2>/dev/null; then
     if [ -n "$(ls -A /config 2>/dev/null)" ] && [ -z "$(ls -A "${CONFIG_DIR}" 2>/dev/null)" ]; then
+        mkdir -p "${CONFIG_DIR}"
         cp -rp /config/. "${CONFIG_DIR}/"
     fi
-    rm -rf /config
 fi
-ln -sfn "${CONFIG_DIR}" /config
+
+bind_mount "${BOOKS_DIR}"  /calibre-library
+bind_mount "${INGEST_DIR}" /cwa-book-ingest
+bind_mount "${CONFIG_DIR}" /config
 
 # Hand control to CWA's S6 supervisor unchanged
 exec /init
