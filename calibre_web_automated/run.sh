@@ -82,16 +82,27 @@ echo "[CWA-HA] nginx ingress proxy started on port 8099"
 # --- Upload size patch ---
 # CWA's config_upload_size defaults to 16 MB and isn't exposed in the UI.
 # auto_library.py only resets config_calibre_dir, so this patch survives restarts.
+# We wait until CWA's web server is accepting connections (port 8083) so the
+# settings table is fully initialised before we patch.
 patch_upload_limit() {
     local db="/config/app.db"
     local retries=0
-    while [ ! -f "${db}" ] && [ ${retries} -lt 30 ]; do
-        sleep 1; retries=$((retries + 1))
+    while [ ${retries} -lt 90 ]; do
+        (echo "" > /dev/tcp/127.0.0.1/8083) 2>/dev/null && break
+        sleep 2; retries=$((retries + 1))
     done
-    if [ -f "${db}" ]; then
-        sqlite3 "${db}" "UPDATE settings SET config_upload_size=2048;" 2>/dev/null \
-            && echo "[CWA-HA] Upload size limit set to 2048 MB" \
-            || echo "[CWA-HA] WARNING: could not patch upload size"
+    sleep 2  # brief settle time for any in-flight db writes
+    if [ ! -f "${db}" ]; then
+        echo "[CWA-HA] WARNING: app.db not found, skipping upload size patch"
+        return
+    fi
+    if sqlite3 "${db}" "UPDATE settings SET config_upload_size=2048;" 2>/dev/null; then
+        echo "[CWA-HA] Upload size limit set to 2048 MB"
+    else
+        local schema_cols
+        schema_cols=$(sqlite3 "${db}" "PRAGMA table_info(settings);" 2>/dev/null \
+            | awk -F'|' '{print $2}' | tr '\n' ',' || echo "error reading schema")
+        echo "[CWA-HA] WARNING: could not patch upload size (settings columns: ${schema_cols})"
     fi
 }
 patch_upload_limit &
