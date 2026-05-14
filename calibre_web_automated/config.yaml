@@ -17,7 +17,8 @@ ports:
 ports_description:
   8083/tcp: Calibre-Web Automated WebUI (not required when using Ingress)
 ingress: true
-ingress_port: 8083
+ingress_port: 8099
+hassio_api: true
 panel_icon: mdi:book-open-variant
 panel_title: Calibre-Web
 panel_admin: false

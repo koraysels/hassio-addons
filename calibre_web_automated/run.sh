@@ -10,45 +10,92 @@ PGID=$(jq --raw-output       '.PGID       // 1000'                    "${CONFIG_
 TZ=$(jq --raw-output         '.TZ         // "UTC"'                   "${CONFIG_PATH}")
 
 export PUID PGID TZ
-export TRUSTED_PROXY_COUNT=1
+export TRUSTED_PROXY_COUNT=2  # HA Ingress → nginx → CWA: two proxy hops
 
 mkdir -p "${BOOKS_DIR}" "${INGEST_DIR}"
 
 echo "[CWA-HA] Books dir : ${BOOKS_DIR}"
 echo "[CWA-HA] Ingest dir: ${INGEST_DIR}"
-echo "[CWA-HA] Config dir: /config (managed by HA addon_config)"
 
-# Point CWA's library at the user's share path.
-# CWA stores this in /config/app.db (SQLite). We update it here so the user
-# never has to touch CWA's admin UI — the HA configuration tab is the single
-# source of truth. We wait for cwa-init to create app.db, then patch it.
+# --- HA Ingress nginx proxy ---
+# HA connects to ingress_port (8099). nginx proxies to CWA at 8083 and injects
+# X-Script-Name so Calibre-Web (Flask) generates correct URLs inside the HA iframe.
+# Without X-Script-Name, static assets and redirects use root-relative URLs that
+# resolve to ha.local:8123/static/... instead of ha.local:8123/<token>/static/...
+INGRESS_ENTRY=""
+if [ -n "${SUPERVISOR_TOKEN:-}" ]; then
+    INGRESS_ENTRY=$(curl -sf \
+        -H "Authorization: Bearer ${SUPERVISOR_TOKEN}" \
+        http://supervisor/addons/self/info \
+        | jq -r '.data.ingress_entry // ""' 2>/dev/null || true)
+fi
+echo "[CWA-HA] Ingress entry: ${INGRESS_ENTRY:-/}"
+
+cat > /tmp/cwa-ingress.nginx.conf << NGINX_EOF
+daemon off;
+pid /tmp/cwa-ingress.nginx.pid;
+worker_processes 1;
+error_log /proc/1/fd/1 error;
+
+events { worker_connections 512; }
+
+http {
+    default_type application/octet-stream;
+    client_max_body_size 0;
+
+    map \$http_upgrade \$connection_upgrade {
+        default upgrade;
+        ''      close;
+    }
+
+    server {
+        listen 8099 default_server;
+
+        location / {
+            proxy_pass          http://127.0.0.1:8083;
+            proxy_set_header    X-Script-Name       ${INGRESS_ENTRY};
+            proxy_set_header    Host                \$http_host;
+            proxy_set_header    X-Real-IP           \$remote_addr;
+            proxy_set_header    X-Forwarded-For     \$proxy_add_x_forwarded_for;
+            proxy_set_header    X-Forwarded-Proto   \$scheme;
+            proxy_set_header    Upgrade             \$http_upgrade;
+            proxy_set_header    Connection          \$connection_upgrade;
+            proxy_buffering     off;
+            proxy_read_timeout  36000s;
+        }
+    }
+}
+NGINX_EOF
+
+nginx -c /tmp/cwa-ingress.nginx.conf &
+echo "[CWA-HA] nginx ingress proxy started on port 8099"
+
+# --- Library path auto-patch ---
+# Wait for cwa-init to create /config/app.db, then point CWA at the configured books_dir.
 set_library_path() {
     local db="/config/app.db"
     local retries=0
     while [ ! -f "${db}" ] && [ ${retries} -lt 30 ]; do
-        sleep 1
-        retries=$((retries + 1))
+        sleep 1; retries=$((retries + 1))
     done
     if [ ! -f "${db}" ]; then
-        echo "[CWA-HA] WARNING: app.db not found after 30s, skipping library path patch"
+        echo "[CWA-HA] WARNING: app.db not found after 30s, skipping library patch"
         return
     fi
-    # Only patch if the stored path differs from the configured one
     local current
-    current=$(sqlite3 "${db}" \
-        "SELECT config_calibre_dir FROM settings LIMIT 1;" 2>/dev/null || echo "")
+    current=$(sqlite3 "${db}" "SELECT config_calibre_dir FROM settings LIMIT 1;" 2>/dev/null || echo "")
     if [ "${current}" != "${BOOKS_DIR}" ]; then
-        sqlite3 "${db}" \
-            "UPDATE settings SET config_calibre_dir='${BOOKS_DIR}';" 2>/dev/null && \
-            echo "[CWA-HA] Library path set to: ${BOOKS_DIR}" || \
-            echo "[CWA-HA] WARNING: could not patch library path in app.db"
+        sqlite3 "${db}" "UPDATE settings SET config_calibre_dir='${BOOKS_DIR}';" 2>/dev/null \
+            && echo "[CWA-HA] Library path set to: ${BOOKS_DIR}" \
+            || echo "[CWA-HA] WARNING: could not patch library path in app.db"
     else
         echo "[CWA-HA] Library path already correct: ${BOOKS_DIR}"
     fi
 }
 set_library_path &
 
-# Bridge files from user's share ingest dir into CWA's watched /cwa-book-ingest.
+# --- Ingest bridge ---
+# CWA watches /cwa-book-ingest. Bridge files from the user's share ingest dir into it.
 ingest_bridge() {
     while true; do
         find "${INGEST_DIR}" -maxdepth 1 -type f \
