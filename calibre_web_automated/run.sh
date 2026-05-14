@@ -10,18 +10,45 @@ PGID=$(jq --raw-output       '.PGID       // 1000'                    "${CONFIG_
 TZ=$(jq --raw-output         '.TZ         // "UTC"'                   "${CONFIG_PATH}")
 
 export PUID PGID TZ
-export TRUSTED_PROXY_COUNT=1   # required for HA Ingress reverse-proxy header handling
+export TRUSTED_PROXY_COUNT=1
 
-# Create the user's share directories on first run
 mkdir -p "${BOOKS_DIR}" "${INGEST_DIR}"
 
 echo "[CWA-HA] Books dir : ${BOOKS_DIR}"
 echo "[CWA-HA] Ingest dir: ${INGEST_DIR}"
 echo "[CWA-HA] Config dir: /config (managed by HA addon_config)"
 
-# CWA watches /cwa-book-ingest for new ebooks. That path is a Docker volume and
-# cannot be redirected without elevated privileges. Instead, run a background loop
-# that moves files from the user's configured ingest dir into CWA's watched path.
+# Point CWA's library at the user's share path.
+# CWA stores this in /config/app.db (SQLite). We update it here so the user
+# never has to touch CWA's admin UI — the HA configuration tab is the single
+# source of truth. We wait for cwa-init to create app.db, then patch it.
+set_library_path() {
+    local db="/config/app.db"
+    local retries=0
+    while [ ! -f "${db}" ] && [ ${retries} -lt 30 ]; do
+        sleep 1
+        retries=$((retries + 1))
+    done
+    if [ ! -f "${db}" ]; then
+        echo "[CWA-HA] WARNING: app.db not found after 30s, skipping library path patch"
+        return
+    fi
+    # Only patch if the stored path differs from the configured one
+    local current
+    current=$(sqlite3 "${db}" \
+        "SELECT config_calibre_dir FROM settings LIMIT 1;" 2>/dev/null || echo "")
+    if [ "${current}" != "${BOOKS_DIR}" ]; then
+        sqlite3 "${db}" \
+            "UPDATE settings SET config_calibre_dir='${BOOKS_DIR}';" 2>/dev/null && \
+            echo "[CWA-HA] Library path set to: ${BOOKS_DIR}" || \
+            echo "[CWA-HA] WARNING: could not patch library path in app.db"
+    else
+        echo "[CWA-HA] Library path already correct: ${BOOKS_DIR}"
+    fi
+}
+set_library_path &
+
+# Bridge files from user's share ingest dir into CWA's watched /cwa-book-ingest.
 ingest_bridge() {
     while true; do
         find "${INGEST_DIR}" -maxdepth 1 -type f \

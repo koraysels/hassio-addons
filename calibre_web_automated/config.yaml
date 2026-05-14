@@ -20,6 +20,7 @@ ingress: true
 ingress_port: 8083
 panel_icon: mdi:book-open-variant
 panel_title: Calibre-Web
+panel_admin: false
 options:
   books_dir: /share/calibre/books
   ingest_dir: /share/calibre/ingest
