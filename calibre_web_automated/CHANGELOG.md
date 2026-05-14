@@ -1,5 +1,13 @@
 # Changelog
 
+## 4.0.6.4
+
+- Fix: books now reliably appear in Samba share within ~30 seconds of being added
+  - Added rsync background job that mirrors /calibre-library → books_dir every 30s
+  - Bind mount is still attempted first (zero overhead when it works); rsync is the
+    guaranteed fallback that requires no elevated privileges
+  - Added rsync to Dockerfile dependencies
+
 ## 4.0.6.3
 
 - Fix: remove 16 MB upload size cap

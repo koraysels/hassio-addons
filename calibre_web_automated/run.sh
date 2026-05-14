@@ -17,16 +17,26 @@ mkdir -p "${BOOKS_DIR}" "${INGEST_DIR}"
 echo "[CWA-HA] Books dir : ${BOOKS_DIR}"
 echo "[CWA-HA] Ingest dir: ${INGEST_DIR}"
 
-# --- Library bind mount ---
-# CWA's auto_library.py always writes books to /calibre-library (a Docker VOLUME)
-# and unconditionally sets config_calibre_dir to /calibre-library in app.db —
-# any patch we make gets reverted. The only way to redirect storage is to overlay
-# /calibre-library with a bind mount before CWA starts. Requires full_access: true.
-if mount --bind "${BOOKS_DIR}" /calibre-library; then
-    echo "[CWA-HA] Bound ${BOOKS_DIR} → /calibre-library (books will appear in Samba)"
+# --- Library → Samba sync ---
+# CWA always stores its library at /calibre-library (a Docker VOLUME declared in
+# the upstream image). We cannot reliably redirect that volume via bind mount in
+# all HA configurations, so we instead rsync /calibre-library → books_dir every
+# 30 seconds. Books appear in the Samba share within half a minute of being added.
+# If the bind mount IS available (full_access: true granted), it is attempted first
+# so the sync becomes a free no-op.
+if mount --bind "${BOOKS_DIR}" /calibre-library 2>/dev/null; then
+    echo "[CWA-HA] Bound ${BOOKS_DIR} → /calibre-library (zero-lag Samba access)"
 else
-    echo "[CWA-HA] WARNING: bind mount failed — books will be stored at /calibre-library (not Samba-accessible)"
+    echo "[CWA-HA] Bind mount unavailable; rsync will mirror to ${BOOKS_DIR} every 30s"
 fi
+
+sync_library() {
+    while true; do
+        sleep 30
+        rsync -a --quiet /calibre-library/ "${BOOKS_DIR}/" 2>/dev/null || true
+    done
+}
+sync_library &
 
 # --- HA Ingress nginx proxy ---
 # HA connects to ingress_port (8099). nginx proxies to CWA at 8083 and injects
