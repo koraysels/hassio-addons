@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.0.6.9
+
+- Fix: editing book metadata (title, author rename) now works
+  - chown -R PUID:PGID books_dir on every startup so CWA can rename/delete
+    any directories created by root in earlier runs
+
 ## 4.0.6.8
 
 - Fix: upload size limit now actually takes effect without a manual addon restart

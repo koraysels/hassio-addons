@@ -26,6 +26,10 @@ rm -rf /calibre-library
 ln -sf "${BOOKS_DIR}" /calibre-library
 echo "[CWA-HA] Symlinked /calibre-library → ${BOOKS_DIR}"
 
+# Fix ownership so CWA (running as abc/PUID) can rename and delete any files,
+# including those created by root in earlier runs before the symlink was in place.
+chown -R "${PUID}:${PGID}" "${BOOKS_DIR}" 2>/dev/null || true
+
 # --- HA Ingress nginx proxy ---
 # HA connects to ingress_port (8099). nginx proxies to CWA at 8083 and injects
 # X-Script-Name so Calibre-Web (Flask) generates correct URLs inside the HA iframe.
