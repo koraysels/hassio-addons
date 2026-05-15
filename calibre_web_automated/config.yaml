@@ -1,5 +1,5 @@
 name: Calibre-Web Automated
-version: "4.0.6.7"
+version: "4.0.6.8"
 slug: calibre_web_automated
 description: >-
   Automated Calibre-Web with ebook ingestion, metadata fetching, and a clean web interface.

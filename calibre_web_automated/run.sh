@@ -81,23 +81,43 @@ echo "[CWA-HA] nginx ingress proxy started on port 8099"
 
 # --- Upload size patch ---
 # CWA's config_upload_size defaults to 16 MB and isn't exposed in the UI.
-# auto_library.py only resets config_calibre_dir, so this patch survives restarts.
-# We wait until CWA's web server is accepting connections (port 8083) so the
-# settings table is fully initialised before we patch.
+# We wait until CWA is fully started (port 8083), patch the DB, then restart
+# the CWA web process so it re-reads the new value immediately.
 patch_upload_limit() {
     local db="/config/app.db"
     local retries=0
+
+    # Wait for CWA web server to be accepting connections
     while [ ${retries} -lt 90 ]; do
         (echo "" > /dev/tcp/127.0.0.1/8083) 2>/dev/null && break
         sleep 2; retries=$((retries + 1))
     done
-    sleep 2  # brief settle time for any in-flight db writes
+    sleep 2
+
     if [ ! -f "${db}" ]; then
         echo "[CWA-HA] WARNING: app.db not found, skipping upload size patch"
         return
     fi
+
+    # Check if already patched (survives restarts once set)
+    local current
+    current=$(sqlite3 "${db}" "SELECT config_upload_size FROM settings LIMIT 1;" 2>/dev/null || echo "0")
+    if [ "${current}" = "2048" ]; then
+        echo "[CWA-HA] Upload size already 2048 MB"
+        return
+    fi
+
     if sqlite3 "${db}" "UPDATE settings SET config_upload_size=2048;" 2>/dev/null; then
-        echo "[CWA-HA] Upload size limit set to 2048 MB"
+        echo "[CWA-HA] Upload size patched to 2048 MB — restarting CWA web server..."
+        # Kill the process listening on 8083; S6 restarts it with the new DB value
+        local web_pid
+        web_pid=$(ss -Htlnp 'sport = :8083' 2>/dev/null | grep -oP 'pid=\K\d+' | head -1 || true)
+        if [ -n "${web_pid}" ]; then
+            kill -TERM "${web_pid}" 2>/dev/null || true
+            echo "[CWA-HA] CWA web server restarting (was pid ${web_pid})"
+        else
+            echo "[CWA-HA] WARNING: could not find CWA web pid to restart — restart the addon manually"
+        fi
     else
         local schema_cols
         schema_cols=$(sqlite3 "${db}" "PRAGMA table_info(settings);" 2>/dev/null \

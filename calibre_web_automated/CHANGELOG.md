@@ -1,5 +1,20 @@
 # Changelog
 
+## 4.0.6.8
+
+- Fix: upload size limit now actually takes effect without a manual addon restart
+  - Patch the DB after CWA starts (settings table fully populated)
+  - Immediately restart the CWA web process via ss+kill so S6 brings it back up
+    with the new 2048 MB value — no second addon restart needed
+  - Skip the patch if DB already has 2048 MB (survives restarts)
+
+## 4.0.6.7
+
+- Fix: upload size patch now waits for CWA web server to be ready before patching
+  - Previous approach ran immediately when app.db appeared, before settings table was populated
+  - Now polls /dev/tcp/127.0.0.1/8083 until CWA is accepting connections, then patches
+  - On failure, logs the actual settings column names so the issue can be diagnosed
+
 ## 4.0.6.6
 
 - Fix: restore linuxserver.io ENV vars stripped by FROM scratch
