@@ -1,5 +1,12 @@
 # Changelog
 
+## 4.0.6.10
+
+- Fix: more robust permissions fix for book editing
+  - Log chown result so failures are visible in addon log
+  - Fall back to chmod 777 if chown fails (e.g. Docker capability restriction)
+  - Always apply chmod u+rwX so owner bits are correct regardless of umask
+
 ## 4.0.6.9
 
 - Fix: editing book metadata (title, author rename) now works

@@ -26,9 +26,16 @@ rm -rf /calibre-library
 ln -sf "${BOOKS_DIR}" /calibre-library
 echo "[CWA-HA] Symlinked /calibre-library → ${BOOKS_DIR}"
 
-# Fix ownership so CWA (running as abc/PUID) can rename and delete any files,
-# including those created by root in earlier runs before the symlink was in place.
-chown -R "${PUID}:${PGID}" "${BOOKS_DIR}" 2>/dev/null || true
+# Fix ownership and permissions so CWA (abc/PUID) can rename and delete any
+# files, including those created by root in earlier runs.
+if chown -R "${PUID}:${PGID}" "${BOOKS_DIR}" 2>/dev/null; then
+    echo "[CWA-HA] Ownership of books_dir set to ${PUID}:${PGID}"
+else
+    echo "[CWA-HA] WARNING: chown failed on books_dir — falling back to chmod 777"
+    chmod -R 777 "${BOOKS_DIR}" 2>/dev/null || true
+fi
+# Ensure owner always has rwX regardless of how dirs were created
+chmod -R u+rwX "${BOOKS_DIR}" 2>/dev/null || true
 
 # --- HA Ingress nginx proxy ---
 # HA connects to ingress_port (8099). nginx proxies to CWA at 8083 and injects
