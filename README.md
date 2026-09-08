@@ -22,3 +22,10 @@ visible on your network.
 
 Wraps [`crocodilestick/calibre-web-automated`](https://github.com/crocodilestick/Calibre-Web-Automated).
 Supports `amd64`, `aarch64`, `armv7` · HA Ingress · Samba-accessible library.
+
+## Add-ons
+
+| Add-on | Description |
+| --- | --- |
+| [Calibre-Web Automated](./calibre_web_automated/) | Ebook library with automatic ingestion |
+| [Stocktracker](./stocktracker/) | Personal portfolio tracker — import broker PDFs, live quotes, all data on your own box |

@@ -1,0 +1,40 @@
+configuration:
+  admin_username:
+    name: Admin username
+    description: >-
+      Your login for the app. The account is created on first start and gets
+      full access, including the Django admin.
+  admin_password:
+    name: Admin password
+    description: >-
+      Applied on every restart, so changing your password is: edit it here,
+      restart the add-on. Leave both fields empty to manage accounts yourself
+      through the Django admin instead.
+  trusted_origin:
+    name: Web address you browse to
+    description: >-
+      The exact address you open the app on, including the port — for example
+      http://homeassistant.local:8000 or http://192.168.1.10:8000. Uploads and
+      forms are rejected from any other address (CSRF protection). If you remap
+      the port on the Network card, update this to match.
+  TZ:
+    name: Timezone
+    description: >-
+      Used for the daily refresh hour and for dates shown in the app.
+  allow_registration:
+    name: Open registration
+    description: >-
+      Off: only your admin account exists. On: household members can create
+      their own account on the login page — every account sees only its own
+      portfolio. Leave off if this port is reachable from outside your network.
+  price_refresh_hour:
+    name: Daily refresh hour
+    description: >-
+      Local hour (0–23) at which closing prices and exchange rates are fetched.
+      The default of 19:00 catches the European close; the US close is picked up
+      the following evening.
+  log_level:
+    name: Log level
+    description: >-
+      Leave on info. Debug logs every request, which is only useful when
+      something is wrong.
