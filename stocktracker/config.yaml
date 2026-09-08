@@ -1,5 +1,5 @@
 name: Stocktracker
-version: "1.0.0"
+version: "1.0.1"
 slug: stocktracker
 description: >-
   Personal portfolio tracker: import MeDirect/Bolero contract notes, live
@@ -18,13 +18,22 @@ ports_description:
   8000/tcp: Stocktracker web app
 panel_icon: mdi:chart-line
 panel_title: Stocktracker
+# The web port itself is remapped on the add-on's Network card, like any
+# add-on; set trusted_origin to whatever address you actually browse to.
+watchdog: http://[HOST]:[PORT:8000]/
 options:
   admin_username: ""
   admin_password: ""
   trusted_origin: "http://homeassistant.local:8000"
   TZ: Europe/Brussels
+  allow_registration: false
+  price_refresh_hour: 19
+  log_level: info
 schema:
   admin_username: str
   admin_password: password
   trusted_origin: str
   TZ: str
+  allow_registration: bool
+  price_refresh_hour: int(0,23)
+  log_level: list(info|debug|warning)
