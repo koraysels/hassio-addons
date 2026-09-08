@@ -1,0 +1,30 @@
+name: Stocktracker
+version: "1.0.0"
+slug: stocktracker
+description: >-
+  Personal portfolio tracker: import MeDirect/Bolero contract notes, live
+  quotes, realised earnings, fees — your data stays on your own box.
+url: https://github.com/koraysels/stocktracker
+# Prebuilt on every release by the app repo's publish workflow; Home Assistant
+# pulls the image instead of building locally, so installs take seconds.
+image: ghcr.io/koraysels/stocktracker-{arch}
+arch:
+  - aarch64
+  - amd64
+init: false
+ports:
+  8000/tcp: 8000
+ports_description:
+  8000/tcp: Stocktracker web app
+panel_icon: mdi:chart-line
+panel_title: Stocktracker
+options:
+  admin_username: ""
+  admin_password: ""
+  trusted_origin: "http://homeassistant.local:8000"
+  TZ: Europe/Brussels
+schema:
+  admin_username: str
+  admin_password: password
+  trusted_origin: str
+  TZ: str
