@@ -1,5 +1,5 @@
 name: Calibre-Web Automated
-version: "4.0.6.10"
+version: "4.0.6.11"
 slug: calibre_web_automated
 description: >-
   Automated Calibre-Web with ebook ingestion, metadata fetching, and a clean web interface.
@@ -11,6 +11,7 @@ arch:
 init: false
 map:
   - share:rw
+  - media:rw
   - addon_config:rw
 ports:
   8083/tcp: 8083

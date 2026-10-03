@@ -40,7 +40,7 @@ Use the **Upload** button in the CWA interface. Files up to 2 GB are accepted.
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| `books_dir` | `/share/calibre/books` | Calibre library location. Accessible via Samba. Created on first start. |
+| `books_dir` | `/share/calibre/books` | Calibre library location. Accessible via Samba. Created on first start. Can also point into `/media`, e.g. a USB drive mounted there. |
 | `ingest_dir` | `/share/calibre/ingest` | Drop ebooks here to trigger automatic import. Files are moved, not copied. |
 | `PUID` | `1000` | User ID the process runs as. Check with `id` on a terminal. |
 | `PGID` | `1000` | Group ID the process runs as. |

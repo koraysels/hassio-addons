@@ -1,5 +1,10 @@
 # Changelog
 
+## 4.0.6.11
+
+- Feat: map `/media` so `books_dir` and `ingest_dir` can live on storage
+  mounted under `/media`, such as a USB drive
+
 ## 4.0.6.10
 
 - Fix: more robust permissions fix for book editing
