@@ -1,5 +1,5 @@
 name: Decypharr
-version: "2.7.1"
+version: "2.7.1-1"
 slug: decypharr
 description: >-
   Debrid gateway (TorBox, Real-Debrid, ...) that acts as a qBittorrent client for Sonarr and Radarr.
