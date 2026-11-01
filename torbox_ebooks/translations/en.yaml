@@ -1,0 +1,26 @@
+configuration:
+  torbox_api_token:
+    name: TorBox API token
+    description: >-
+      From the TorBox dashboard (Settings → API). Used only to list your downloads
+      and fetch ebook files.
+  ingest_dir:
+    name: Ingest directory
+    description: >-
+      Calibre-Web Automated's ingest folder. Default: /share/calibre/ingest
+  interval_minutes:
+    name: Check interval (minutes)
+    description: How often TorBox is checked for new ebooks.
+  extensions:
+    name: File types
+    description: >-
+      Comma-separated extensions to copy. Everything else (video, nfo, txt) stays
+      in TorBox.
+  include_torrents:
+    name: Include torrents
+    description: Also look at torrent downloads, not only usenet.
+  import_existing:
+    name: Import existing ebooks on first start
+    description: >-
+      When off, ebooks already in TorBox at first start are skipped; only new ones
+      are copied.

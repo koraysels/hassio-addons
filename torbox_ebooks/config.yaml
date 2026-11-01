@@ -1,0 +1,27 @@
+name: TorBox Ebooks
+version: "1.0.0"
+slug: torbox_ebooks
+description: >-
+  Copies finished ebooks from your TorBox account into the Calibre-Web Automated ingest folder.
+url: https://github.com/koraysels/hassio-addons/tree/main/torbox_ebooks
+arch:
+  - aarch64
+  - amd64
+init: false
+startup: application
+map:
+  - share:rw
+options:
+  torbox_api_token: ""
+  ingest_dir: /share/calibre/ingest
+  interval_minutes: 5
+  extensions: epub,mobi,azw3,pdf,cbz,cbr
+  include_torrents: true
+  import_existing: true
+schema:
+  torbox_api_token: password
+  ingest_dir: str
+  interval_minutes: int(1,1440)
+  extensions: str
+  include_torrents: bool
+  import_existing: bool

@@ -39,3 +39,4 @@ Supports `amd64`, `aarch64`.
 | [Stocktracker](./stocktracker/) | Personal portfolio tracker — import broker PDFs, live quotes, all data on your own box |
 | [Decypharr](./decypharr/) | TorBox/debrid gateway for Sonarr & Radarr (fake qBittorrent) |
 | [TorBoxarr](./torboxarr/) | Send torrents and usenet NZBs from Sonarr & Radarr to TorBox |
+| [TorBox Ebooks](./torbox_ebooks/) | Copy ebooks from TorBox into Calibre-Web Automated's ingest folder |
