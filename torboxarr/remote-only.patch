@@ -1,0 +1,40 @@
+diff --git a/internal/config/config.go b/internal/config/config.go
+index 9c46ab7..7464cc1 100644
+--- a/internal/config/config.go
++++ b/internal/config/config.go
+@@ -49,6 +49,9 @@ type Config struct {
+ 		PollPerMinute         int
+ 		DownloadLinkPerMinute int
+ 		UserAgent             string
++		// RemoteOnly marks jobs completed once TorBox has the content, without
++		// downloading anything locally.
++		RemoteOnly bool
+ 	}
+ 
+ 	Auth struct {
+@@ -167,6 +170,10 @@ func applyEnv(cfg *Config) {
+ 	setString(&cfg.Auth.QBitPassword, "TORBOXARR_QBIT_PASSWORD")
+ 	setString(&cfg.Auth.SABAPIKey, "TORBOXARR_SAB_API_KEY")
+ 	setString(&cfg.Auth.SABNZBKey, "TORBOXARR_SAB_NZB_KEY")
++
++	if v := strings.TrimSpace(os.Getenv("TORBOXARR_REMOTE_ONLY")); v != "" {
++		cfg.TorBox.RemoteOnly = strings.EqualFold(v, "true") || v == "1"
++	}
+ }
+ 
+ func (c *Config) Validate() error {
+diff --git a/internal/worker/poll.go b/internal/worker/poll.go
+index 87b14b8..a9dfa29 100644
+--- a/internal/worker/poll.go
++++ b/internal/worker/poll.go
+@@ -233,6 +233,10 @@ func (o *Orchestrator) applyActiveStatus(ctx context.Context, job *store.Job, st
+ 		job.ErrorMessage = nil
+ 		job.QueuedID = nil
+ 		o.log.Info("remote content ready", "job_id", job.ID, "public_id", job.PublicID, "remote_id", deref(job.RemoteID))
++		if o.cfg.TorBox.RemoteOnly {
++			job.NextRunAt = nil
++			return o.store.UpdateJobState(ctx, job, store.StateCompleted, "remote content ready; remote-only mode, no local download")
++		}
+ 		return o.store.UpdateJobState(ctx, job, store.StateLocalDownloadPending, "remote content ready for local download")
+ 	case status.Failed || status.Inactive:
+ 		msg := status.Error

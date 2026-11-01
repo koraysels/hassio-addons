@@ -1,11 +1,14 @@
 # TorBoxarr
 
-TorBoxarr accepts torrents and NZBs from Sonarr/Radarr, submits them to TorBox, waits
-until TorBox has finished, then **downloads the files locally** to `data_root` so the
-*arr app can import them.
+TorBoxarr accepts torrents and NZBs from Sonarr/Radarr and submits them to TorBox.
 
-> Every grab ends up on your Home Assistant disk as well as in TorBox. Keep an eye on
-> free space, or point `data_root` at a network share.
+With `remote_only` on (the default) that is all it does: once TorBox has finished, the
+job is reported as completed and **nothing is downloaded locally**. Watch it from
+Stremio via the TorBox addon. Sonarr/Radarr will keep the item as "completed, not
+imported" because there are no local files.
+
+With `remote_only` off, TorBoxarr downloads finished files to `data_root` so the *arr
+app can import them — keep an eye on free disk space in that mode.
 
 ## Installation
 

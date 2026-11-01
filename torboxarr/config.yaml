@@ -1,5 +1,5 @@
 name: TorBoxarr
-version: "1.0.5"
+version: "1.0.5-1"
 slug: torboxarr
 description: >-
   Fake qBittorrent/SABnzbd client that sends torrents and NZBs from Sonarr and Radarr to TorBox.
@@ -19,11 +19,13 @@ options:
   torbox_api_token: ""
   qbit_password: ""
   sab_api_key: ""
+  remote_only: true
   data_root: /share/torboxarr
   log_level: INFO
 schema:
   torbox_api_token: password
   qbit_password: password
   sab_api_key: password
+  remote_only: bool
   data_root: str
   log_level: list(DEBUG|INFO|WARN|ERROR)

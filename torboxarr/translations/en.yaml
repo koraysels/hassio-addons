@@ -13,6 +13,12 @@ configuration:
     description: >-
       Pick any key. Use it as the API key for the SABnzbd download client in
       Sonarr/Radarr (usenet).
+  remote_only:
+    name: Remote only (no local download)
+    description: >-
+      When on, jobs are marked complete as soon as TorBox has the content and
+      nothing is downloaded to Home Assistant. Sonarr/Radarr will show the item
+      as completed but not imported. Turn off to download files locally.
   data_root:
     name: Data directory
     description: >-

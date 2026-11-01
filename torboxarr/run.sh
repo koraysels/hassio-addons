@@ -6,6 +6,8 @@ CONFIG_PATH=/data/options.json
 TORBOXARR_TORBOX_API_TOKEN=$(jq --raw-output '.torbox_api_token // ""'               "${CONFIG_PATH}")
 TORBOXARR_QBIT_PASSWORD=$(jq --raw-output    '.qbit_password    // ""'               "${CONFIG_PATH}")
 TORBOXARR_SAB_API_KEY=$(jq --raw-output      '.sab_api_key      // ""'               "${CONFIG_PATH}")
+# Not `// true`: jq's alternative operator would turn an explicit false into true
+TORBOXARR_REMOTE_ONLY=$(jq --raw-output      'if .remote_only == false then "false" else "true" end' "${CONFIG_PATH}")
 TORBOXARR_DATA_ROOT=$(jq --raw-output        '.data_root        // "/share/torboxarr"' "${CONFIG_PATH}")
 TORBOXARR_LOG_LEVEL=$(jq --raw-output        '.log_level        // "INFO"'           "${CONFIG_PATH}")
 
@@ -21,10 +23,10 @@ done
 TORBOXARR_DATABASE_PATH=/data/torboxarr.db
 
 export TORBOXARR_TORBOX_API_TOKEN TORBOXARR_QBIT_PASSWORD TORBOXARR_SAB_API_KEY \
-       TORBOXARR_DATA_ROOT TORBOXARR_LOG_LEVEL TORBOXARR_DATABASE_PATH
+       TORBOXARR_DATA_ROOT TORBOXARR_LOG_LEVEL TORBOXARR_DATABASE_PATH TORBOXARR_REMOTE_ONLY
 
 # SAB clients only use categories whose folder already exists
 mkdir -p "${TORBOXARR_DATA_ROOT}/completed/sonarr" "${TORBOXARR_DATA_ROOT}/completed/radarr"
 
-echo "[TorBoxarr-HA] Data root: ${TORBOXARR_DATA_ROOT}"
+echo "[TorBoxarr-HA] Data root: ${TORBOXARR_DATA_ROOT} (remote only: ${TORBOXARR_REMOTE_ONLY})"
 exec /app/torboxarr
