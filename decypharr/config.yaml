@@ -1,0 +1,19 @@
+name: Decypharr
+version: "2.7.1"
+slug: decypharr
+description: >-
+  Debrid gateway (TorBox, Real-Debrid, ...) that acts as a qBittorrent client for Sonarr and Radarr.
+url: https://github.com/koraysels/hassio-addons/tree/main/decypharr
+arch:
+  - aarch64
+  - amd64
+init: false
+startup: application
+watchdog: tcp://[HOST]:[PORT:8282]
+map:
+  - share:rw
+ports:
+  8282/tcp: 8282
+ports_description:
+  8282/tcp: Decypharr WebUI and qBittorrent API (used by Sonarr/Radarr)
+webui: http://[HOST]:[PORT:8282]

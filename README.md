@@ -23,9 +23,18 @@ visible on your network.
 Wraps [`crocodilestick/calibre-web-automated`](https://github.com/crocodilestick/Calibre-Web-Automated).
 Supports `amd64`, `aarch64`, `armv7` · HA Ingress · Samba-accessible library.
 
+### [Decypharr](decypharr/)
+
+Debrid gateway that acts as a qBittorrent client for Sonarr and Radarr. Every grab goes
+straight to your TorBox (or Real-Debrid, ...) account, ready to stream from Stremio.
+
+Wraps [`sirrobot01/decypharr`](https://github.com/sirrobot01/decypharr).
+Supports `amd64`, `aarch64`.
+
 ## Add-ons
 
 | Add-on | Description |
 | --- | --- |
 | [Calibre-Web Automated](./calibre_web_automated/) | Ebook library with automatic ingestion |
 | [Stocktracker](./stocktracker/) | Personal portfolio tracker — import broker PDFs, live quotes, all data on your own box |
+| [Decypharr](./decypharr/) | TorBox/debrid gateway for Sonarr & Radarr (fake qBittorrent) |

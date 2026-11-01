@@ -1,0 +1,8 @@
+build_from:
+  aarch64: cy01/blackhole:v2.7.1
+  amd64: cy01/blackhole:v2.7.1
+labels:
+  org.opencontainers.image.title: "Decypharr"
+  org.opencontainers.image.description: "Debrid gateway for Sonarr and Radarr"
+  org.opencontainers.image.source: "https://github.com/koraysels/hassio-addons"
+  org.opencontainers.image.licenses: "MIT"
