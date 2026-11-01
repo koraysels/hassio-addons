@@ -1,0 +1,8 @@
+build_from:
+  aarch64: mrjoiny/torboxarr:1.0.5
+  amd64: mrjoiny/torboxarr:1.0.5
+labels:
+  org.opencontainers.image.title: "TorBoxarr"
+  org.opencontainers.image.description: "TorBox download client for Sonarr and Radarr"
+  org.opencontainers.image.source: "https://github.com/koraysels/hassio-addons"
+  org.opencontainers.image.licenses: "MIT"

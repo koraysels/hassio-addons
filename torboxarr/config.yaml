@@ -1,0 +1,29 @@
+name: TorBoxarr
+version: "1.0.5"
+slug: torboxarr
+description: >-
+  Fake qBittorrent/SABnzbd client that sends torrents and NZBs from Sonarr and Radarr to TorBox.
+url: https://github.com/koraysels/hassio-addons/tree/main/torboxarr
+arch:
+  - aarch64
+  - amd64
+init: false
+startup: application
+map:
+  - share:rw
+ports:
+  8085/tcp: 8085
+ports_description:
+  8085/tcp: qBittorrent and SABnzbd API (used by Sonarr/Radarr)
+options:
+  torbox_api_token: ""
+  qbit_password: ""
+  sab_api_key: ""
+  data_root: /share/torboxarr
+  log_level: INFO
+schema:
+  torbox_api_token: password
+  qbit_password: password
+  sab_api_key: password
+  data_root: str
+  log_level: list(DEBUG|INFO|WARN|ERROR)

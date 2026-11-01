@@ -1,0 +1,24 @@
+configuration:
+  torbox_api_token:
+    name: TorBox API token
+    description: >-
+      From the TorBox dashboard (Settings → API).
+  qbit_password:
+    name: qBittorrent password
+    description: >-
+      Pick any password. Use it (with username admin) for the qBittorrent
+      download client in Sonarr/Radarr.
+  sab_api_key:
+    name: SABnzbd API key
+    description: >-
+      Pick any key. Use it as the API key for the SABnzbd download client in
+      Sonarr/Radarr (usenet).
+  data_root:
+    name: Data directory
+    description: >-
+      Where TorBoxarr stages and stores finished downloads. Completed files land
+      in <data_root>/completed/<category>. Default: /share/torboxarr
+  log_level:
+    name: Log level
+network:
+  8085/tcp: qBittorrent and SABnzbd API
