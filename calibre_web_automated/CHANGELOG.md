@@ -1,5 +1,13 @@
 # Changelog
 
+## 4.0.6.11
+
+- Fix: editing books imported while the add-on is running no longer fails with
+  "Permission denied"
+  - Ingest bridge hands new files to PUID:PGID before CWA picks them up
+  - Every ~30 s, any root-owned file or folder in books_dir is chowned back to
+    PUID:PGID (CWA's ingest runs as root and creates root-owned book folders)
+
 ## 4.0.6.10
 
 - Fix: more robust permissions fix for book editing

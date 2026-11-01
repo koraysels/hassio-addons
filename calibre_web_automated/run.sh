@@ -140,10 +140,20 @@ patch_upload_limit &
 
 # --- Ingest bridge ---
 # CWA watches /cwa-book-ingest. Bridge files from the user's share ingest dir into it.
+# CWA's ingest runs as root, so new book folders end up root-owned and edits in the
+# web UI (running as PUID) fail with EACCES. Hand files over to PUID before ingest
+# and periodically repair ownership of anything that still slipped through.
 ingest_bridge() {
+    local n=0
     while true; do
         find "${INGEST_DIR}" -maxdepth 1 -type f \
+            -exec chown "${PUID}:${PGID}" {} \; \
             -exec mv -n {} /cwa-book-ingest/ \; 2>/dev/null || true
+        if [ $((n % 10)) -eq 0 ]; then
+            find "${BOOKS_DIR}" \( ! -user "${PUID}" -o ! -group "${PGID}" \) \
+                -exec chown "${PUID}:${PGID}" {} + 2>/dev/null || true
+        fi
+        n=$((n + 1))
         sleep 3
     done
 }
